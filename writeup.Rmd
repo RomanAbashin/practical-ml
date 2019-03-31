@@ -1,0 +1,53 @@
+---
+title: "Pset Prediction Assignment Writeup"
+author: "Roman Abashin"
+date: "3/31/2019"
+output: html_document
+---
+
+# Loading data and libraries
+
+```{r Setup, comment=FALSE, message = FALSE, echo=FALSE, warning=FALSE}
+# Load data
+test <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", 
+                 stringsAsFactors = F)
+train <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", 
+                  stringsAsFactors = F)
+
+# Load libraries
+library(caret)
+library(e1071)
+library(ggplot2)
+library(plyr)
+library(tidyverse)
+```
+
+
+This assignment is about building a robust model to predict physical activity type from data collected by a wearable activity tracker like a Fitbit. 
+
+# Explorational Data Analysis
+## Target Variable
+Our target variable, `classe`, is a 5-level factor variable that indicates the type of activity a person is doing.
+
+```{r Target variable}
+qplot(train$classe)
+```
+
+Running `qplot(train$classe)` (above) or `table(t(colwise(class)(train)))` shows two things:
+
+* First, that there are no missing values.
+* Second, that we have a slight imbalance in our training data. 
+
+The latter will be ignored for our first model, but can definitely be a point for further improvement.
+
+Furthermore, `class(data$classe)` shows that our target variable is encoded as a factor. This will be needed to be dealt with.
+
+## Features
+Running `table(t(colwise(class)(train)))` shows, that we 
+
+
+# Data cleaning
+
+## Encode target variable as factor
+
+## Encode 
