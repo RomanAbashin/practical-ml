@@ -77,7 +77,7 @@ Using `nearZeroVar(train)` the training data can be tested for variables that do
 # Data cleaning
 
 ## Encode feature variables as numeric, 
-```{r Encode_Numeric}
+```{r Encode_Numeric, warning=FALSE}
 train[, 8:159] <- lapply(train[, 8:159], as.numeric)
 ```
 
@@ -126,7 +126,7 @@ Our model shows 96% accuracy on the training set. The accuracy on the test set w
 ## Prepare test set
 ```{r Setup_Test}
 test[, 8:159] <- lapply(test[, 8:159], as.numeric)
-test[, 160] <- factor(test[, 160], levels = c(LETTERS[1:5]))
+test <- test[, -as.vector(nas$id)]
 ```
 
 ## Predict values
