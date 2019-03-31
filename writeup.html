@@ -368,71 +368,6 @@ data.frame(id = 1:160, n = sapply(na_test, function(y) sum(length(which(is.na(y)
 <div id="encode-feature-variables-as-numeric" class="section level2">
 <h2>Encode feature variables as numeric,</h2>
 <pre class="r"><code>train[, 8:159] &lt;- lapply(train[, 8:159], as.numeric)</code></pre>
-<pre><code>## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
-
-## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion</code></pre>
 <p>This has also creates some sparse columns (empty strings were coerced into <code>NA</code>) which need to be dealt with.</p>
 </div>
 <div id="remove-sparse-variables" class="section level2">
@@ -471,12 +406,13 @@ train &lt;- train[, -as.vector(nas$id)]</code></pre>
 <div id="prepare-test-set" class="section level2">
 <h2>Prepare test set</h2>
 <pre class="r"><code>test[, 8:159] &lt;- lapply(test[, 8:159], as.numeric)
-test[, 160] &lt;- factor(test[, 160], levels = c(LETTERS[1:5]))</code></pre>
+test &lt;- test[, -as.vector(nas$id)]</code></pre>
 </div>
 <div id="predict-values" class="section level2">
 <h2>Predict values</h2>
 <pre class="r"><code>predict(fit, test)</code></pre>
-<pre><code>## factor(0)
+<pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 ## Levels: A B C D E</code></pre>
 </div>
 </div>
