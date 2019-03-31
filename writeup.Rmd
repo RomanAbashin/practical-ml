@@ -27,9 +27,10 @@ This assignment is about building a robust model to predict physical activity ty
 
 # Explorational Data Analysis
 ## Target Variable
+
 Our target variable, `classe`, is a 5-level factor variable that indicates the type of activity a person is doing.
 
-```{r Target variable}
+```{r Target_Variable}
 qplot(train$classe)
 ```
 
@@ -40,14 +41,95 @@ Running `qplot(train$classe)` (above) or `table(t(colwise(class)(train)))` shows
 
 The latter will be ignored for our first model, but can definitely be a point for further improvement.
 
-Furthermore, `class(data$classe)` shows that our target variable is encoded as a factor. This will be needed to be dealt with.
+Furthermore, `class(data$classe)` shows that our target variable is encoded as a character. This will be needed to be dealt with.
 
 ## Features
-Running `table(t(colwise(class)(train)))` shows, that we 
 
+Running `table(t(colwise(class)(train)))` shows, that we have multiple numeric features that are encoded as character. Further exploration shows that all of the character-encoded seem to have missing value. There is no indiciation whether those are to be treated as `0` (no value recorded) or `NA` (missing from the data).
+
+Furthermore, there seem to be two parts to the feature data: 
+
+* Attributes of the observation (e.g., `id`, `user_name`, or `cvtd_timestamp`) in variables 1-7
+* Observed values (e.g., `pitch_belt`) in variables 8-159
+
+This leads to the conclusion that
+
+1. The variables 1-7 should not be used for a first generalized model;  
+This also means that there is an opportunity for later optimization by, e.g., taking into account the time of day of the exercise,
+1. The variables 8-159 should be encoded into `numeric`;  
+This will also lead to the character-encoded empty string values to be converted to NA. Specialized models would also maybe work with `0` values.
+
+## NA values
+
+```{r NA_Values, warning=FALSE}
+na_test <- train
+na_test[, 8:159] <- lapply(na_test[, 8:159], as.numeric)
+data.frame(id = 1:160, n = sapply(na_test, function(y) sum(length(which(is.na(y)))) / nrow(na_test))) %>%
+    filter(n > 0.95) %>%        # remove for full list
+    nrow()                      # remove for full list
+```
+
+A test for NA values in numeric-encoded variables also shows that 100 variables are 95% `NA`. This also leads to the conclusion that those columns can be probably be safely eliminated for a first generalized model.
+
+## Variables with near-zero variance
+Using `nearZeroVar(train)` the training data can be tested for variables that do not show a lot of variation. Many of those variables are probably sparse, so this test should be repeated after removing the sparse variables with >95% `NA` values. 
 
 # Data cleaning
 
-## Encode target variable as factor
+## Encode feature variables as numeric, 
+```{r Encode_Numeric}
+train[, 8:159] <- lapply(train[, 8:159], as.numeric)
+```
 
-## Encode 
+This has also creates some sparse columns (empty strings were coerced into `NA`) which need to be dealt with.
+
+## Remove sparse variables
+```{r Remove_Sparse}
+nas <- data.frame(id = 1:160, 
+                  n = sapply(train, function(y) sum(length(which(is.na(y)))) / nrow(train))) %>%
+    filter(n > 0.95)
+train <- train[, -as.vector(nas$id)]
+```
+
+Furthermore, we should ensure that there are not variables with low variance left.
+
+```{r Test_NZV}
+nearZeroVar(train)
+```
+
+The only near-zero variable is an attribute that will not be used for the model. Therefore, it can safely be left as-is.
+
+## Encode target variable as factor
+```{r Encode_Target}
+train[, 60] <- factor(train[, 60], levels = c(LETTERS[1:5]))
+```
+
+
+# Model
+## Build model
+
+Support vector machine multi-classification. Should there unexpectedly be more `NA` values, those will be omitted.
+
+```{r Model}
+fit <- svm(classe ~ ., data = train[, 7:60], na.action = na.omit)
+```
+
+## Test model on training set
+
+```{r Validation}
+confusionMatrix(train$classe, predict(fit, train))$overall[1]
+```
+
+Our model shows 96% accuracy on the training set. The accuracy on the test set will probably be lower.
+
+# Prediction
+## Prepare test set
+```{r Setup_Test}
+test[, 8:159] <- lapply(test[, 8:159], as.numeric)
+test[, 160] <- factor(test[, 160], levels = c(LETTERS[1:5]))
+```
+
+## Predict values
+```{r Predict}
+predict(fit, test)
+```

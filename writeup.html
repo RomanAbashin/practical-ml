@@ -330,11 +330,33 @@ $(document).ready(function () {
 <li>Second, that we have a slight imbalance in our training data.</li>
 </ul>
 <p>The latter will be ignored for our first model, but can definitely be a point for further improvement.</p>
-<p>Furthermore, <code>class(data$classe)</code> shows that our target variable is encoded as a factor. This will be needed to be dealt with.</p>
+<p>Furthermore, <code>class(data$classe)</code> shows that our target variable is encoded as a character. This will be needed to be dealt with.</p>
 </div>
 <div id="features" class="section level2">
 <h2>Features</h2>
-<p>Running <code>table(t(colwise(class)(train)))</code> shows, that we</p>
+<p>Running <code>table(t(colwise(class)(train)))</code> shows, that we have multiple numeric features that are encoded as character. Further exploration shows that all of the character-encoded seem to have missing value. There is no indiciation whether those are to be treated as <code>0</code> (no value recorded) or <code>NA</code> (missing from the data).</p>
+<p>Furthermore, there seem to be two parts to the feature data:</p>
+<ul>
+<li>Attributes of the observation (e.g., <code>id</code>, <code>user_name</code>, or <code>cvtd_timestamp</code>) in variables 1-7</li>
+<li>Observed values (e.g., <code>pitch_belt</code>) in variables 8-159</li>
+</ul>
+<p>This leads to the conclusion that</p>
+<ol style="list-style-type: decimal">
+<li>The variables 1-7 should not be used for a first generalized model;<br />
+This also means that there is an opportunity for later optimization by, e.g., taking into account the time of day of the exercise,</li>
+<li>The variables 8-159 should be encoded into <code>numeric</code>;<br />
+This will also lead to the character-encoded empty string values to be converted to NA. Specialized models would also maybe work with <code>0</code> values.</li>
+</ol>
+</div>
+<div id="na-values" class="section level2">
+<h2>NA values</h2>
+<pre class="r"><code>na_test &lt;- train
+na_test[, 8:159] &lt;- lapply(na_test[, 8:159], as.numeric)
+data.frame(id = 1:160, n = sapply(na_test, function(y) sum(length(which(is.na(y)))) / nrow(na_test))) %&gt;%
+    filter(n &gt; 0.95) %&gt;% 
+    nrow() # remove for a full list</code></pre>
+<pre><code>## [1] 100</code></pre>
+<p>A test for NA values in numeric-encoded variables also shows that 100 variables are 95% <code>NA</code>. This also leads to the conclusion that those columns can be probably be safely eliminated for a first generalized model.</p>
 </div>
 </div>
 <div id="data-cleaning" class="section level1">
