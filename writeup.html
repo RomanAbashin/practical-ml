@@ -353,19 +353,131 @@ This will also lead to the character-encoded empty string values to be converted
 <pre class="r"><code>na_test &lt;- train
 na_test[, 8:159] &lt;- lapply(na_test[, 8:159], as.numeric)
 data.frame(id = 1:160, n = sapply(na_test, function(y) sum(length(which(is.na(y)))) / nrow(na_test))) %&gt;%
-    filter(n &gt; 0.95) %&gt;% 
-    nrow() # remove for a full list</code></pre>
+    filter(n &gt; 0.95) %&gt;%        # remove for full list
+    nrow()                      # remove for full list</code></pre>
 <pre><code>## [1] 100</code></pre>
 <p>A test for NA values in numeric-encoded variables also shows that 100 variables are 95% <code>NA</code>. This also leads to the conclusion that those columns can be probably be safely eliminated for a first generalized model.</p>
+</div>
+<div id="variables-with-near-zero-variance" class="section level2">
+<h2>Variables with near-zero variance</h2>
+<p>Using <code>nearZeroVar(train)</code> the training data can be tested for variables that do not show a lot of variation. Many of those variables are probably sparse, so this test should be repeated after removing the sparse variables with &gt;95% <code>NA</code> values.</p>
 </div>
 </div>
 <div id="data-cleaning" class="section level1">
 <h1>Data cleaning</h1>
+<div id="encode-feature-variables-as-numeric" class="section level2">
+<h2>Encode feature variables as numeric,</h2>
+<pre class="r"><code>train[, 8:159] &lt;- lapply(train[, 8:159], as.numeric)</code></pre>
+<pre><code>## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion
+
+## Warning in lapply(train[, 8:159], as.numeric): NAs introduced by coercion</code></pre>
+<p>This has also creates some sparse columns (empty strings were coerced into <code>NA</code>) which need to be dealt with.</p>
+</div>
+<div id="remove-sparse-variables" class="section level2">
+<h2>Remove sparse variables</h2>
+<pre class="r"><code>nas &lt;- data.frame(id = 1:160, 
+                  n = sapply(train, function(y) sum(length(which(is.na(y)))) / nrow(train))) %&gt;%
+    filter(n &gt; 0.95)
+train &lt;- train[, -as.vector(nas$id)]</code></pre>
+<p>Furthermore, we should ensure that there are not variables with low variance left.</p>
+<pre class="r"><code>nearZeroVar(train)</code></pre>
+<pre><code>## [1] 6</code></pre>
+<p>The only near-zero variable is an attribute that will not be used for the model. Therefore, it can safely be left as-is.</p>
+</div>
 <div id="encode-target-variable-as-factor" class="section level2">
 <h2>Encode target variable as factor</h2>
+<pre class="r"><code>train[, 60] &lt;- factor(train[, 60], levels = c(LETTERS[1:5]))</code></pre>
 </div>
-<div id="encode" class="section level2">
-<h2>Encode</h2>
+</div>
+<div id="model" class="section level1">
+<h1>Model</h1>
+<div id="build-model" class="section level2">
+<h2>Build model</h2>
+<p>Support vector machine multi-classification. Should there unexpectedly be more <code>NA</code> values, those will be omitted.</p>
+<pre class="r"><code>fit &lt;- svm(classe ~ ., data = train[, 7:60], na.action = na.omit)</code></pre>
+</div>
+<div id="test-model-on-training-set" class="section level2">
+<h2>Test model on training set</h2>
+<pre class="r"><code>confusionMatrix(train$classe, predict(fit, train))$overall[1]</code></pre>
+<pre><code>##  Accuracy 
+## 0.9624401</code></pre>
+<p>Our model shows 96% accuracy on the training set. The accuracy on the test set will probably be lower.</p>
+</div>
+</div>
+<div id="prediction" class="section level1">
+<h1>Prediction</h1>
+<div id="prepare-test-set" class="section level2">
+<h2>Prepare test set</h2>
+<pre class="r"><code>test[, 8:159] &lt;- lapply(test[, 8:159], as.numeric)
+test[, 160] &lt;- factor(test[, 160], levels = c(LETTERS[1:5]))</code></pre>
+</div>
+<div id="predict-values" class="section level2">
+<h2>Predict values</h2>
+<pre class="r"><code>predict(fit, test)</code></pre>
+<pre><code>## factor(0)
+## Levels: A B C D E</code></pre>
 </div>
 </div>
 
